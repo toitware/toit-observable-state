@@ -1,0 +1,5 @@
+name: observable-state
+description: Service- and resource-based observable state support for containers.
+
+environment:
+  sdk: ^2.0.0-alpha.161
