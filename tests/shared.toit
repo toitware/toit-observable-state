@@ -15,26 +15,26 @@ interface TestService extends api.ObservableStateService:
       --major=1
       --minor=0
 
-  get-state -> int
+  get-state key/string -> int
   static GET-STATE-INDEX ::= 0
 
 class TestServiceProvider extends service.ObservableStateServiceProviderBase:
-  state/service.ObservableState ::= service.ObservableState
+  states/Map
 
-  constructor:
+  constructor .states:
     super "observable-state/test-service" --major=1 --minor=2
     provides TestService.SELECTOR --handler=this
 
   handle index/int arguments/any --gid/int --client/int -> any:
     if index == TestService.GET-STATE-INDEX:
-      return get-state --client=client
+      return get-state arguments --client=client
     return super index arguments --gid=gid --client=client
 
-  get-state -> int:  // Satisfy checker.
+  get-state key/string -> int:  // Satisfy checker.
     unreachable
 
-  get-state --client/int -> service.ObservableStateResource:
-    return service.ObservableStateResource state this client
+  get-state key/string --client/int -> service.ObservableStateResource:
+    return service.ObservableStateResource states[key] this client
 
 class TestClient extends api.ObservableStateServiceClient implements TestService:
   static SELECTOR ::= TestService.SELECTOR
@@ -42,8 +42,8 @@ class TestClient extends api.ObservableStateServiceClient implements TestService
     assert: selector.matches SELECTOR
     super selector
 
-  get-state -> TestState:
-    handle := invoke_ TestService.GET-STATE-INDEX null
+  get-state key/string -> TestState:
+    handle := invoke_ TestService.GET-STATE-INDEX key
     return TestState this handle
 
 class TestState extends client.ObservableState:
